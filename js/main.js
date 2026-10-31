@@ -1,5 +1,6 @@
 /**
  * Portfolio – Main JavaScript
+ * Felipe Santana · Full-Stack Developer
  * Pure vanilla JS · ES6+ · No dependencies
  */
 
@@ -29,13 +30,20 @@
     };
   };
 
+  /** Lerp – linear interpolation */
+  const lerp = (start, end, factor) => start + (end - start) * factor;
+
+  /** Check if touch device */
+  const isTouchDevice = () =>
+    'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
   /* ============================
    * 1. Splash Screen Controller
    * ============================ */
 
   const initSplash = () => {
-    const MIN_DELAY = 2500; // ms
-    const TRANSITION = 600; // matches CSS transition duration
+    const MIN_DELAY = 2800; // ms
+    const TRANSITION = 800; // matches CSS transition duration
     const start = performance.now();
 
     const hideSplash = () => {
@@ -76,8 +84,15 @@
 
     const applyTheme = (theme) => {
       html.setAttribute('data-theme', theme);
+
+      // Update theme-color meta tag
+      const metaTheme = document.querySelector('meta[name="theme-color"]');
+      if (metaTheme) {
+        metaTheme.setAttribute('content', theme === 'dark' ? '#0b0b0f' : '#f4f3f0');
+      }
+
       if (toggle) {
-        toggle.setAttribute('aria-label', `Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`);
+        toggle.setAttribute('aria-label', `Mudar para tema ${theme === 'dark' ? 'claro' : 'escuro'}`);
       }
     };
 
@@ -96,6 +111,12 @@
         const next = current === 'dark' ? 'light' : 'dark';
         applyTheme(next);
         localStorage.setItem('theme', next);
+
+        // Rotate animation on the toggle
+        toggle.style.transform = 'scale(0.9) rotate(180deg)';
+        setTimeout(() => {
+          toggle.style.transform = '';
+        }, 300);
       });
     }
   };
@@ -117,7 +138,7 @@
           }
         });
       },
-      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+      { threshold: 0.1, rootMargin: '0px 0px -60px 0px' }
     );
 
     elements.forEach((el) => observer.observe(el));
@@ -191,6 +212,14 @@
     document.addEventListener('click', (e) => {
       if (menu.classList.contains('active') && !menu.contains(e.target) && !toggle.contains(e.target)) {
         closeMenu();
+      }
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && menu.classList.contains('active')) {
+        closeMenu();
+        toggle.focus();
       }
     });
   };
@@ -268,12 +297,12 @@
       });
 
       if (!valid) {
-        showToast('Please fill in all fields correctly.', 'error');
+        showToast('Por favor, preencha todos os campos corretamente.', 'error');
         return;
       }
 
       // Success
-      showToast('Message sent successfully!', 'success');
+      showToast('Mensagem enviada com sucesso! ✨', 'success');
       form.reset();
     });
 
@@ -291,7 +320,8 @@
     const heroElements = document.querySelectorAll('.hero .reveal-up');
     heroElements.forEach((el) => {
       const delay = parseInt(el.getAttribute('data-delay'), 10) || 0;
-      setTimeout(() => el.classList.add('revealed'), delay);
+      // Each data-delay step = 150ms for a nice stagger
+      setTimeout(() => el.classList.add('revealed'), delay * 150);
     });
   };
 
@@ -325,12 +355,12 @@
     toast.className = `toast toast--${type}`;
     toast.textContent = message;
     toast.style.cssText = `
-      pointer-events:auto;padding:.75rem 1.25rem;border-radius:.5rem;
+      pointer-events:auto;padding:.85rem 1.5rem;border-radius:.6rem;
       font-size:.875rem;font-weight:500;color:#fff;
-      background:${type === 'success' ? '#16a34a' : '#dc2626'};
-      box-shadow:0 4px 12px rgba(0,0,0,.15);
-      opacity:0;transform:translateY(.5rem);
-      transition:opacity .3s ease,transform .3s ease;
+      background:${type === 'success' ? '#28c840' : '#ff5f57'};
+      box-shadow:0 8px 24px rgba(0,0,0,.2);
+      opacity:0;transform:translateY(.75rem);
+      transition:opacity .4s ease,transform .4s ease;
     `;
 
     container.appendChild(toast);
@@ -341,12 +371,264 @@
       toast.style.transform = 'translateY(0)';
     });
 
-    // Auto-dismiss after 3s
+    // Auto-dismiss after 3.5s
     setTimeout(() => {
       toast.style.opacity = '0';
-      toast.style.transform = 'translateY(.5rem)';
+      toast.style.transform = 'translateY(.75rem)';
       toast.addEventListener('transitionend', () => toast.remove(), { once: true });
-    }, 3000);
+    }, 3500);
+  };
+
+  /* ============================
+   * 11. Custom Cursor (Desktop)
+   * ============================ */
+
+  const initCustomCursor = () => {
+    if (isTouchDevice()) return;
+
+    const dot = document.getElementById('cursorDot');
+    const ring = document.getElementById('cursorRing');
+    if (!dot || !ring) return;
+
+    let mouseX = -100;
+    let mouseY = -100;
+    let ringX = -100;
+    let ringY = -100;
+    let isVisible = false;
+
+    const moveCursor = (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+
+      if (!isVisible) {
+        dot.style.opacity = '1';
+        ring.style.opacity = '0.4';
+        isVisible = true;
+      }
+    };
+
+    const hideCursor = () => {
+      dot.style.opacity = '0';
+      ring.style.opacity = '0';
+      isVisible = false;
+    };
+
+    document.addEventListener('mousemove', moveCursor);
+    document.addEventListener('mouseleave', hideCursor);
+
+    // Smooth ring follow using rAF
+    const animateRing = () => {
+      ringX = lerp(ringX, mouseX, 0.15);
+      ringY = lerp(ringY, mouseY, 0.15);
+
+      dot.style.left = `${mouseX}px`;
+      dot.style.top = `${mouseY}px`;
+      ring.style.left = `${ringX}px`;
+      ring.style.top = `${ringY}px`;
+
+      requestAnimationFrame(animateRing);
+    };
+    animateRing();
+
+    // Hover state for interactive elements
+    const interactiveElements = 'a, button, input, textarea, .project-card, .skill-card';
+    document.addEventListener('mouseover', (e) => {
+      if (e.target.closest(interactiveElements)) {
+        dot.classList.add('cursor--hover');
+        ring.classList.add('cursor--hover');
+      }
+    });
+    document.addEventListener('mouseout', (e) => {
+      if (e.target.closest(interactiveElements)) {
+        dot.classList.remove('cursor--hover');
+        ring.classList.remove('cursor--hover');
+      }
+    });
+  };
+
+  /* ============================
+   * 12. Particles Background
+   * ============================ */
+
+  const initParticles = () => {
+    const canvas = document.getElementById('particlesCanvas');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    let particles = [];
+    let animationId;
+    const PARTICLE_COUNT = Math.min(50, Math.floor(window.innerWidth / 25));
+    const CONNECTION_DISTANCE = 120;
+
+    const resize = () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    };
+
+    const createParticle = () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      size: Math.random() * 1.5 + 0.5,
+      opacity: Math.random() * 0.4 + 0.1,
+    });
+
+    const initParticleArray = () => {
+      particles = [];
+      for (let i = 0; i < PARTICLE_COUNT; i++) {
+        particles.push(createParticle());
+      }
+    };
+
+    const getParticleColor = () => {
+      const theme = document.documentElement.getAttribute('data-theme');
+      return theme === 'light' ? '154, 123, 62' : '200, 165, 92';
+    };
+
+    const animate = () => {
+      ctx.clearRect(0, 0, width, height);
+      const colorRGB = getParticleColor();
+
+      particles.forEach((p, i) => {
+        // Move
+        p.x += p.vx;
+        p.y += p.vy;
+
+        // Wrap around edges
+        if (p.x < 0) p.x = width;
+        if (p.x > width) p.x = 0;
+        if (p.y < 0) p.y = height;
+        if (p.y > height) p.y = 0;
+
+        // Draw particle
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${colorRGB}, ${p.opacity})`;
+        ctx.fill();
+
+        // Draw connections
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = p.x - particles[j].x;
+          const dy = p.y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < CONNECTION_DISTANCE) {
+            const lineOpacity = (1 - dist / CONNECTION_DISTANCE) * 0.15;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `rgba(${colorRGB}, ${lineOpacity})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      });
+
+      animationId = requestAnimationFrame(animate);
+    };
+
+    // Check for reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    resize();
+    initParticleArray();
+    animate();
+
+    // Debounced resize
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        resize();
+        initParticleArray();
+      }, 250);
+    });
+
+    // Cleanup on page visibility change
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        cancelAnimationFrame(animationId);
+      } else {
+        animate();
+      }
+    });
+  };
+
+  /* ============================
+   * 13. Scroll Progress Bar
+   * ============================ */
+
+  const initScrollProgress = () => {
+    const progressBar = document.getElementById('scrollProgress');
+    if (!progressBar) return;
+
+    const updateProgress = throttle(() => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+      progressBar.style.width = `${progress}%`;
+    }, 16);
+
+    window.addEventListener('scroll', updateProgress, { passive: true });
+    updateProgress();
+  };
+
+  /* ============================
+   * 14. Parallax Subtle Effect
+   * ============================ */
+
+  const initParallax = () => {
+    if (isTouchDevice()) return;
+
+    const codeWindow = document.querySelector('.hero__code-window');
+    if (!codeWindow) return;
+
+    const onMouseMove = throttle((e) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 2;
+      const y = (e.clientY / window.innerHeight - 0.5) * 2;
+
+      codeWindow.style.transform = `
+        perspective(1000px)
+        rotateY(${x * 2}deg)
+        rotateX(${-y * 2}deg)
+        translateY(${-y * 4}px)
+      `;
+    }, 16);
+
+    const hero = document.querySelector('.hero');
+    if (hero) {
+      hero.addEventListener('mousemove', onMouseMove);
+      hero.addEventListener('mouseleave', () => {
+        codeWindow.style.transform = '';
+      });
+    }
+  };
+
+  /* ============================
+   * 15. Magnetic Button Effect
+   * ============================ */
+
+  const initMagneticButtons = () => {
+    if (isTouchDevice()) return;
+
+    const buttons = document.querySelectorAll('.btn--primary');
+
+    buttons.forEach((btn) => {
+      btn.addEventListener('mousemove', (e) => {
+        const rect = btn.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+
+        btn.style.transform = `translate(${x * 0.15}px, ${y * 0.15}px)`;
+      });
+
+      btn.addEventListener('mouseleave', () => {
+        btn.style.transform = '';
+      });
+    });
   };
 
   /* ============================
@@ -362,5 +644,10 @@
     initRevealAnimations();
     initActiveNav();
     initContactForm();
+    initCustomCursor();
+    initParticles();
+    initScrollProgress();
+    initParallax();
+    initMagneticButtons();
   });
 })();

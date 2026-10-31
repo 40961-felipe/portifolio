@@ -3,10 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Felipe Santana — Desenvolvedor Full-Stack. Portfólio profissional com projetos em HTML, CSS e JavaScript.">
-  <meta name="keywords" content="Felipe Santana, Full-Stack Developer, Desenvolvedor, Portfólio, HTML, CSS, JavaScript">
+  <meta name="description" content="Felipe Santana — Desenvolvedor Full-Stack em formação. Portfólio profissional com projetos em HTML, CSS e JavaScript. Disponível para freelance e oportunidades CLT.">
+  <meta name="keywords" content="Felipe Santana, Full-Stack Developer, Desenvolvedor, Portfólio, HTML, CSS, JavaScript, Web Developer, Freelancer">
   <meta name="author" content="Felipe Santana">
-  <meta name="theme-color" content="#1a1a2e">
+  <meta name="theme-color" content="#0b0b0f">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Felipe Santana — Full-Stack Developer">
+  <meta property="og:description" content="Construindo experiências digitais com código limpo, design intuitivo e paixão por tecnologia.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="pt_BR">
 
   <title>Felipe Santana — Full-Stack Developer</title>
 
@@ -19,6 +25,16 @@
 </head>
 <body>
 
+  <!-- ==================== SCROLL PROGRESS ==================== -->
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+
+  <!-- ==================== CUSTOM CURSOR ==================== -->
+  <div class="cursor-dot" id="cursorDot" aria-hidden="true"></div>
+  <div class="cursor-ring" id="cursorRing" aria-hidden="true"></div>
+
+  <!-- ==================== PARTICLES CANVAS ==================== -->
+  <canvas id="particlesCanvas" aria-hidden="true"></canvas>
+
   <!-- ==================== SPLASH SCREEN ==================== -->
   <div id="splash" class="splash" aria-hidden="true">
     <div class="splash__content">
@@ -28,6 +44,7 @@
       <div class="splash__line-wrapper">
         <span class="splash__line splash__line--2">Santana</span>
       </div>
+      <p class="splash__subtitle">Full-Stack Developer</p>
       <div class="splash__loader">
         <div class="splash__loader-bar"></div>
       </div>
@@ -142,7 +159,7 @@
   <span class="code-method">createSomething</span>() {
     <span class="code-keyword">return</span> <span class="code-string">"amazing"</span>;
   }
-};</code></pre>
+};<span class="code-cursor"></span></code></pre>
           </div>
         </div>
       </div>
